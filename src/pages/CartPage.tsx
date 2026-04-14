@@ -7,9 +7,12 @@ interface CartPageProps {
   updateQuantity: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   cartTotal: number;
+  checkoutUrl?: string | null;
+  proceedToCheckout?: () => void;
+  useShopify?: boolean;
 }
 
-export default function CartPage({ cart, updateQuantity, removeFromCart, cartTotal }: CartPageProps) {
+export default function CartPage({ cart, updateQuantity, removeFromCart, cartTotal, checkoutUrl, proceedToCheckout, useShopify }: CartPageProps) {
   const deliveryCharge = cartTotal >= 499 ? 0 : 40;
   const total = cartTotal + deliveryCharge;
 
@@ -67,7 +70,7 @@ export default function CartPage({ cart, updateQuantity, removeFromCart, cartTot
                 
                 <div className="flex items-center gap-2 mt-2">
                   <span className="font-bold text-gray-900">₹{item.price}</span>
-                  {item.originalPrice > item.price && (
+                  {(item.originalPrice || 0) > item.price && (
                     <span className="text-sm text-gray-400 line-through">₹{item.originalPrice}</span>
                   )}
                 </div>
@@ -134,8 +137,12 @@ export default function CartPage({ cart, updateQuantity, removeFromCart, cartTot
               <span className="font-bold text-lg">₹{total}</span>
             </div>
             
-            <button className="w-full bg-jio-green text-white py-3 rounded-lg font-medium hover:bg-jio-dark transition-colors">
-              Proceed to Checkout
+            <button 
+              onClick={useShopify && checkoutUrl ? () => window.location.href = checkoutUrl : proceedToCheckout}
+              disabled={!useShopify && !proceedToCheckout}
+              className="w-full bg-jio-green text-white py-3 rounded-lg font-medium hover:bg-jio-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {useShopify ? 'Proceed to Checkout' : 'Checkout (Demo Mode)'}
             </button>
             
             <Link

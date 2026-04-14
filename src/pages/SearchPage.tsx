@@ -1,22 +1,19 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { useSearch } from '../hooks/useShopify';
 import type { Product } from '../types';
 
 interface SearchPageProps {
   addToCart: (product: Product) => void;
-  products: Product[];
   searchQuery: string;
 }
 
-export default function SearchPage({ addToCart, products, searchQuery }: SearchPageProps) {
+export default function SearchPage({ addToCart, searchQuery }: SearchPageProps) {
   const [searchParams] = useSearchParams();
   const query = searchQuery || searchParams.get('q') || '';
-
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(query.toLowerCase()) ||
-    product.category.toLowerCase().includes(query.toLowerCase())
-  );
+  
+  const { products: filteredProducts } = useSearch(query);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4">

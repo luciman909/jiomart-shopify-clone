@@ -2,19 +2,20 @@ import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { ChevronRight, Star, ShoppingCart, Heart, Share2, Truck, ShieldCheck, RotateCcw, Minus, Plus } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { useProduct, useProducts } from '../hooks/useShopify';
 import type { Product } from '../types';
 
 interface ProductPageProps {
   addToCart: (product: Product) => void;
-  products: Product[];
 }
 
-export default function ProductPage({ addToCart, products }: ProductPageProps) {
+export default function ProductPage({ addToCart }: ProductPageProps) {
   const { productId } = useParams<{ productId: string }>();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
-
-  const product = products.find(p => p.id === productId);
+  
+  const { product } = useProduct(productId || '');
+  const { products } = useProducts(50);
   const relatedProducts = products
     .filter(p => p.category === product?.category && p.id !== productId)
     .slice(0, 4);
@@ -91,10 +92,10 @@ export default function ProductPage({ addToCart, products }: ProductPageProps) {
 
           <div className="flex items-baseline gap-3 py-2">
             <span className="text-3xl font-bold text-gray-900">₹{product.price}</span>
-            {product.originalPrice > product.price && (
+            {(product.originalPrice || 0) > product.price && (
               <>
                 <span className="text-lg text-gray-400 line-through">₹{product.originalPrice}</span>
-                <span className="text-green-600 font-medium">{product.discount}% OFF</span>
+                <span className="text-green-600 font-medium">{product.discount || 0}% OFF</span>
               </>
             )}
           </div>

@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Gift, Tag, Percent, Clock, ShoppingBasket, Smartphone, Shirt, Home } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import { useProducts } from '../hooks/useShopify';
 import type { Product } from '../types';
 
 interface OffersPageProps {
   addToCart: (product: Product) => void;
-  products: Product[];
 }
 
 const offers = [
@@ -50,8 +50,9 @@ const coupons = [
   { code: 'FREESHIP', discount: 'FREE DELIVERY', minOrder: 'All orders', desc: 'No delivery charges' }
 ];
 
-export default function OffersPage({ addToCart, products }: OffersPageProps) {
-  const discountedProducts = products.filter(p => p.discount > 15).slice(0, 8);
+export default function OffersPage({ addToCart }: OffersPageProps) {
+  const { products } = useProducts(50);
+  const discountedProducts = products.filter((p: Product) => (p.discount || 0) > 15).slice(0, 8);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 space-y-8">

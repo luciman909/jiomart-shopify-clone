@@ -17,7 +17,7 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
             alt={product.name}
             className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform"
           />
-          {product.discount > 0 && (
+          {(product.discount || 0) > 0 && (
             <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
               {product.discount}% OFF
             </span>
@@ -46,7 +46,7 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-gray-900">₹{product.price}</span>
-              {product.originalPrice > product.price && (
+              {(product.originalPrice || 0) > product.price && (
                 <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
               )}
             </div>

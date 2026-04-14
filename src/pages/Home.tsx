@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home, Apple, Milk, Sparkles, Palette } from 'lucide-react';
+import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Apple, Milk, Sparkles, Palette } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { banners, products, categories, deals } from '../data';
 import type { Product } from '../types';
@@ -12,7 +12,7 @@ const iconMap: Record<string, React.ElementType> = {
   ShoppingBasket,
   Smartphone,
   Shirt,
-  Home,
+  Home: HomeIcon,
   Apple,
   Milk,
   Sparkles,

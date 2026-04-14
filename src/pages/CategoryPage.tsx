@@ -2,14 +2,15 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import CategorySidebar from '../components/CategorySidebar';
+import { useProducts } from '../hooks/useShopify';
 import type { Product } from '../types';
 
 interface CategoryPageProps {
   addToCart: (product: Product) => void;
-  products: Product[];
 }
 
-export default function CategoryPage({ addToCart, products }: CategoryPageProps) {
+export default function CategoryPage({ addToCart }: CategoryPageProps) {
+  const { products } = useProducts(100);
   const { categoryName } = useParams<{ categoryName: string }>();
   
   const categoryNameFormatted = categoryName 
