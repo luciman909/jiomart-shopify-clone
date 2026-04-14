@@ -108,18 +108,38 @@ export const useProducts = (limit: number = 50) => {
       }
 
       try {
-        const { data } = await shopifyClient.request(GET_PRODUCTS, {
+        console.log('Fetching products from Shopify...');
+        const { data, errors } = await shopifyClient.request(GET_PRODUCTS, {
           variables: { first: limit },
         });
+        
+        console.log('Shopify response:', { data, errors });
+        
+        if (errors) {
+          console.error('GraphQL errors:', errors);
+          const errorMessages = Array.isArray(errors) 
+            ? errors.map((e: any) => e?.message || 'Unknown error').join(', ')
+            : 'Failed to fetch products';
+          setError('API Error: ' + errorMessages);
+          setProducts(mockProducts);
+          return;
+        }
         
         const mappedProducts = data?.products?.edges?.map((edge: { node: ShopifyProduct }) => 
           mapShopifyProduct(edge.node)
         ) || [];
         
+        console.log('Mapped products:', mappedProducts.length);
+        
+        if (mappedProducts.length === 0) {
+          setError('No products found in your Shopify store');
+        }
+        
         setProducts(mappedProducts);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching products:', err);
-        setError('Failed to fetch products. Using mock data.');
+        const errorMsg = err?.message || err?.toString() || 'Unknown error';
+        setError('Error: ' + errorMsg + '. Using mock data.');
         setProducts(mockProducts);
       } finally {
         setLoading(false);

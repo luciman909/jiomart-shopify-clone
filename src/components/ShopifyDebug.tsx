@@ -47,8 +47,10 @@ export default function ShopifyDebug() {
         <div className="bg-white p-3 rounded border">
           <h4 className="font-semibold text-sm">Products ({products.length}):</h4>
           {productsLoading && <p className="text-xs text-gray-500">Loading...</p>}
-          {productsError && <p className="text-xs text-red-500">Error: {productsError}</p>}
-          {!productsLoading && products.length === 0 && (
+          {productsError && (
+            <p className="text-xs text-red-500 bg-red-50 p-2 rounded mt-1">Error: {productsError}</p>
+          )}
+          {!productsLoading && !productsError && products.length === 0 && (
             <p className="text-xs text-orange-500">⚠️ No products found</p>
           )}
           {products.length > 0 && (
