@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Apple, Milk, Sparkles, Palette } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { banners, products, categories, deals } from '../data';
+import { banners, categories as mockCategories, deals } from '../data';
+import { useProducts, useCollections } from '../hooks/useShopify';
 import type { Product } from '../types';
 import ShopifyDebug from '../components/ShopifyDebug';
 
@@ -21,10 +22,29 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function Home({ addToCart }: HomeProps) {
+  // Get real products from Shopify
+  const { products, loading: productsLoading, error: productsError } = useProducts(50);
+  const { collections } = useCollections(20);
+  
+  // Use real collections if available, otherwise mock categories
+  const displayCategories = collections.length > 0 ? collections : mockCategories;
+  
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 space-y-6">
       {/* Debug Panel - Remove after fixing */}
       <ShopifyDebug />
+      
+      {/* Show loading or error */}
+      {productsLoading && (
+        <div className="bg-blue-50 border border-blue-200 px-4 py-3 rounded">
+          <p className="text-blue-800">Loading products from your Shopify store...</p>
+        </div>
+      )}
+      {productsError && (
+        <div className="bg-yellow-50 border border-yellow-200 px-4 py-3 rounded">
+          <p className="text-yellow-800">⚠️ {productsError}</p>
+        </div>
+      )}
       {/* Hero Banner Carousel */}
       <div className="relative overflow-hidden rounded-xl">
         <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 gap-4">
@@ -59,7 +79,7 @@ export default function Home({ addToCart }: HomeProps) {
           </Link>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4">
-          {categories.map((category) => {
+          {displayCategories.map((category) => {
             const Icon = iconMap[category.icon] || ShoppingBasket;
             return (
               <Link
@@ -118,7 +138,7 @@ export default function Home({ addToCart }: HomeProps) {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {products.slice(0, 12).map((product) => (
+          {products.slice(0, 12).map((product: Product) => (
             <ProductCard key={product.id} product={product} addToCart={addToCart} />
           ))}
         </div>

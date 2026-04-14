@@ -40,18 +40,21 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       {!shopifyReady && (
-        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2">
-          <div className="max-w-7xl mx-auto text-sm text-yellow-800 flex items-center justify-between">
-            <span>
-              <strong>Demo Mode:</strong> Using mock data. Configure Shopify credentials in .env file to connect to your store.
-            </span>
+        <div className="bg-red-600 text-white px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="bg-white text-red-600 px-2 py-1 rounded text-xs font-bold">DEMO</span>
+              <span className="font-medium">
+                Showing FAKE/MOCK products. Not connected to your Shopify store.
+              </span>
+            </div>
             <a 
-              href="https://github.com/your-repo/jiomart-shopify-clone#shopify-setup" 
+              href="https://github.com/luciman909/jiomart-shopify-clone#shopify-setup" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="underline hover:text-yellow-900"
+              className="underline hover:text-red-200 text-sm"
             >
-              Setup Guide
+              How to Connect →
             </a>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, AlertCircle } from 'lucide-react';
 import type { Product } from '../types';
+import { isShopifyConfigured } from '../lib/shopify';
 
 interface ProductCardProps {
   product: Product;
@@ -8,8 +9,11 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, addToCart }: ProductCardProps) {
+  const shopifyReady = isShopifyConfigured();
+  const isMockProduct = !shopifyReady || product.id.length < 5; // Simple check for mock data
+  
   return (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden group">
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden group relative">
       <Link to={`/product/${product.id}`} className="block">
         <div className="relative aspect-square bg-gray-50 p-4">
           <img
@@ -20,6 +24,12 @@ export default function ProductCard({ product, addToCart }: ProductCardProps) {
           {(product.discount || 0) > 0 && (
             <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
               {product.discount}% OFF
+            </span>
+          )}
+          {isMockProduct && (
+            <span className="absolute top-2 right-2 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+              <AlertCircle size={10} />
+              DEMO
             </span>
           )}
         </div>
