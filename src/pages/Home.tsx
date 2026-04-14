@@ -3,6 +3,7 @@ import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Appl
 import ProductCard from '../components/ProductCard';
 import { banners, products, categories, deals } from '../data';
 import type { Product } from '../types';
+import ShopifyDebug from '../components/ShopifyDebug';
 
 interface HomeProps {
   addToCart: (product: Product) => void;
@@ -22,6 +23,8 @@ const iconMap: Record<string, React.ElementType> = {
 export default function Home({ addToCart }: HomeProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 space-y-6">
+      {/* Debug Panel - Remove after fixing */}
+      <ShopifyDebug />
       {/* Hero Banner Carousel */}
       <div className="relative overflow-hidden rounded-xl">
         <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 gap-4">
