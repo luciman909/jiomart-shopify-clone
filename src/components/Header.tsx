@@ -13,9 +13,12 @@ import {
   Gift,
   Ticket,
   HelpCircle,
-  Phone
+  Phone,
+  Store
 } from 'lucide-react';
 import { categories } from '../data';
+import { useShopInfo, useCollections } from '../hooks/useShopify';
+import StoreSwitcher from './StoreSwitcher';
 
 interface HeaderProps {
   cartCount: number;
@@ -24,9 +27,14 @@ interface HeaderProps {
 }
 
 export default function Header({ cartCount, searchQuery, setSearchQuery }: HeaderProps) {
+  const { shopInfo } = useShopInfo();
+  const { collections } = useCollections(20);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Use real collections from Shopify, fallback to mock categories
+  const displayCategories = collections.length > 0 ? collections : categories;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,10 +49,14 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
       <div className="bg-jio-green text-white py-2 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
           <div className="flex items-center gap-4">
-            <span className="font-semibold">Welcome to JioMart</span>
+            <span className="font-semibold">Welcome to {shopInfo?.name || 'JioMart'}</span>
             <span className="hidden sm:inline">|</span>
             <span className="hidden sm:flex items-center gap-1">
               <Phone size={12} /> 1800 890 1222
+            </span>
+            <span className="hidden sm:inline">|</span>
+            <span className="hidden md:flex items-center gap-1">
+              <Store size={12} /> {shopInfo?.slogan || 'Bharat ka Apna Store'}
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -62,19 +74,29 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-jio-green rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">J</span>
-                </div>
-                <span className="text-jio-green font-bold text-xl hidden sm:block">JioMart</span>
+                {shopInfo?.logoUrl ? (
+                  <img 
+                    src={shopInfo.logoUrl} 
+                    alt={shopInfo.name || 'Store'} 
+                    className="w-10 h-10 object-contain rounded-lg"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-jio-green rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      {(shopInfo?.name || 'J').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <span className="text-jio-green font-bold text-xl hidden sm:block">
+                  {shopInfo?.name || 'JioMart'}
+                </span>
               </div>
             </Link>
 
-            {/* Location */}
-            <button className="hidden md:flex items-center gap-1 text-sm text-gray-600 hover:text-jio-green transition-colors px-3 py-1 rounded-lg hover:bg-gray-100">
-              <MapPin size={16} className="text-jio-green" />
-              <span className="max-w-[120px] truncate">Select Location</span>
-              <ChevronDown size={14} />
-            </button>
+            {/* Store Switcher */}
+            <div className="hidden md:block">
+              <StoreSwitcher />
+            </div>
 
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="flex-1 max-w-2xl mx-4">
@@ -149,7 +171,7 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
                   onMouseEnter={() => setIsCategoryOpen(true)}
                   onMouseLeave={() => setIsCategoryOpen(false)}
                 >
-                  {categories.map((category) => (
+                  {displayCategories.map((category) => (
                     <Link
                       key={category.id}
                       to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -163,7 +185,7 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
               )}
             </div>
             
-            {categories.slice(0, 6).map((category) => (
+            {displayCategories.slice(0, 6).map((category) => (
               <Link
                 key={category.id}
                 to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -187,7 +209,7 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
             
             <div className="space-y-1">
               <p className="text-xs font-medium text-gray-400 uppercase px-2 py-1">Categories</p>
-              {categories.map((category) => (
+              {displayCategories.map((category) => (
                 <Link
                   key={category.id}
                   to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}

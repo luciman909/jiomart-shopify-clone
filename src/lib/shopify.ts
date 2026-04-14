@@ -16,6 +16,85 @@ export const isShopifyConfigured = () => {
 };
 
 // GraphQL Queries
+// Shop Info Query
+export const GET_SHOP_INFO = `
+  query GetShopInfo {
+    shop {
+      name
+      description
+      primaryDomain {
+        url
+        host
+      }
+      brand {
+        logo {
+          image {
+            url
+            altText
+          }
+        }
+        slogan
+        shortDescription
+      }
+    }
+  }
+`;
+
+// Locations Query for Inventory
+export const GET_LOCATIONS = `
+  query GetLocations($first: Int!) {
+    locations(first: $first, includeInactive: false) {
+      edges {
+        node {
+          id
+          name
+          address {
+            city
+            country
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Product Inventory by Location
+export const GET_PRODUCT_INVENTORY = `
+  query GetProductInventory($id: ID!) {
+    product(id: $id) {
+      id
+      title
+      variants(first: 10) {
+        edges {
+          node {
+            id
+            title
+            inventoryQuantity
+            quantityAvailable
+            availableForSale
+            inventoryItem {
+              id
+              tracked
+              inventoryLevels(first: 5) {
+                edges {
+                  node {
+                    id
+                    available
+                    location {
+                      id
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_PRODUCTS = `
   query GetProducts($first: Int!) {
     products(first: $first) {

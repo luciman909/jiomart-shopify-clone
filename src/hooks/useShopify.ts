@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { shopifyClient, isShopifyConfigured, GET_PRODUCTS, GET_PRODUCT_BY_HANDLE, GET_COLLECTIONS, GET_COLLECTION_BY_HANDLE, SEARCH_PRODUCTS, CREATE_CART, ADD_TO_CART, UPDATE_CART_LINE, REMOVE_FROM_CART, GET_CART } from '../lib/shopify';
+import { shopifyClient, isShopifyConfigured, GET_PRODUCTS, GET_PRODUCT_BY_HANDLE, GET_COLLECTIONS, GET_COLLECTION_BY_HANDLE, SEARCH_PRODUCTS, CREATE_CART, ADD_TO_CART, UPDATE_CART_LINE, REMOVE_FROM_CART, GET_CART, GET_SHOP_INFO, GET_LOCATIONS, GET_PRODUCT_INVENTORY } from '../lib/shopify';
 import { products as mockProducts, categories as mockCategories, deals, banners } from '../data';
 import type { Product, Collection, CartItem, ShopifyProduct, ShopifyCollection, CartLine } from '../types/shopify';
 
@@ -617,5 +617,240 @@ function getCategoryIcon(title: string): string {
   if (lower.includes('beauty') || lower.includes('makeup')) return 'Palette';
   return 'ShoppingBasket';
 }
+
+// ======== NEW REAL-TIME SHOPIFY HOOKS ========
+
+// Hook to fetch Shop Info (Logo, Name, etc.)
+export const useShopInfo = () => {
+  const [shopInfo, setShopInfo] = useState<{
+    name: string;
+    description?: string;
+    logoUrl?: string;
+    slogan?: string;
+    primaryDomain?: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const useShopify = isShopifyConfigured();
+
+  useEffect(() => {
+    const fetchShopInfo = async () => {
+      if (!useShopify) {
+        // Use mock data
+        setShopInfo({
+          name: 'JioMart',
+          description: 'Your one-stop online grocery and lifestyle store',
+          logoUrl: '',
+          slogan: 'Bharat ka Apna Store',
+        });
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await shopifyClient.request(GET_SHOP_INFO);
+        
+        if (data?.shop) {
+          setShopInfo({
+            name: data.shop.name,
+            description: data.shop.description,
+            logoUrl: data.shop.brand?.logo?.image?.url,
+            slogan: data.shop.brand?.slogan,
+            primaryDomain: data.shop.primaryDomain?.url,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching shop info:', err);
+        setError('Failed to fetch shop info');
+        // Fallback
+        setShopInfo({
+          name: 'JioMart',
+          description: 'Your one-stop online grocery and lifestyle store',
+          logoUrl: '',
+          slogan: 'Bharat ka Apna Store',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShopInfo();
+  }, [useShopify]);
+
+  return { shopInfo, loading, error, useShopify };
+};
+
+// Hook to fetch Locations (for inventory switching)
+export const useLocations = () => {
+  const [locations, setLocations] = useState<Array<{
+    id: string;
+    name: string;
+    city?: string;
+    country?: string;
+  }>>([]);
+  const [selectedLocation, setSelectedLocation] = useState<string>(() => {
+    return localStorage.getItem('selectedLocation') || '';
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const useShopify = isShopifyConfigured();
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!useShopify) {
+        // Mock locations
+        const mockLocations = [
+          { id: 'loc_1', name: 'Mumbai Store', city: 'Mumbai', country: 'India' },
+          { id: 'loc_2', name: 'Delhi Store', city: 'Delhi', country: 'India' },
+          { id: 'loc_3', name: 'Bangalore Store', city: 'Bangalore', country: 'India' },
+        ];
+        setLocations(mockLocations);
+        if (!selectedLocation && mockLocations.length > 0) {
+          setSelectedLocation(mockLocations[0].id);
+        }
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await shopifyClient.request(GET_LOCATIONS, {
+          variables: { first: 10 },
+        });
+        
+        if (data?.locations?.edges) {
+          const locs = data.locations.edges.map((edge: { node: { id: string; name: string; address?: { city?: string; country?: string } } }) => ({
+            id: edge.node.id,
+            name: edge.node.name,
+            city: edge.node.address?.city,
+            country: edge.node.address?.country,
+          }));
+          setLocations(locs);
+          if (!selectedLocation && locs.length > 0) {
+            setSelectedLocation(locs[0].id);
+            localStorage.setItem('selectedLocation', locs[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching locations:', err);
+        setError('Failed to fetch locations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLocations();
+  }, [useShopify]);
+
+  const selectLocation = (locationId: string) => {
+    setSelectedLocation(locationId);
+    localStorage.setItem('selectedLocation', locationId);
+  };
+
+  return { locations, selectedLocation, selectLocation, loading, error, useShopify };
+};
+
+// Hook to fetch Product Inventory by Location
+export const useProductInventory = (productId: string) => {
+  const [inventory, setInventory] = useState<{
+    totalAvailable: number;
+    byLocation: Array<{
+      locationId: string;
+      locationName: string;
+      available: number;
+    }>;
+    variants: Array<{
+      id: string;
+      title: string;
+      inventoryQuantity: number;
+      availableForSale: boolean;
+    }>;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const useShopify = isShopifyConfigured();
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      if (!productId) {
+        setLoading(false);
+        return;
+      }
+
+      if (!useShopify) {
+        // Mock inventory
+        setInventory({
+          totalAvailable: 50,
+          byLocation: [
+            { locationId: 'loc_1', locationName: 'Mumbai Store', available: 20 },
+            { locationId: 'loc_2', locationName: 'Delhi Store', available: 15 },
+            { locationId: 'loc_3', locationName: 'Bangalore Store', available: 15 },
+          ],
+          variants: [
+            { id: 'var_1', title: 'Default', inventoryQuantity: 50, availableForSale: true },
+          ],
+        });
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await shopifyClient.request(GET_PRODUCT_INVENTORY, {
+          variables: { id: `gid://shopify/Product/${productId}` },
+        });
+        
+        if (data?.product) {
+          const variants = data.product.variants.edges.map((edge: { node: { id: string; title: string; inventoryQuantity?: number; availableForSale: boolean } }) => ({
+            id: edge.node.id,
+            title: edge.node.title,
+            inventoryQuantity: edge.node.inventoryQuantity || 0,
+            availableForSale: edge.node.availableForSale,
+          }));
+
+          // Aggregate inventory by location
+          const locationMap = new Map<string, { name: string; available: number }>();
+          let totalAvailable = 0;
+
+          data.product.variants.edges.forEach((edge: { node: { inventoryItem?: { inventoryLevels?: { edges: Array<{ node: { available: number; location: { id: string; name: string } } }> } } } }) => {
+            const levels = edge.node.inventoryItem?.inventoryLevels?.edges || [];
+            levels.forEach((level: { node: { available: number; location: { id: string; name: string } } }) => {
+              const locId = level.node.location.id;
+              const existing = locationMap.get(locId);
+              if (existing) {
+                existing.available += level.node.available;
+              } else {
+                locationMap.set(locId, {
+                  name: level.node.location.name,
+                  available: level.node.available,
+                });
+              }
+              totalAvailable += level.node.available;
+            });
+          });
+
+          const byLocation = Array.from(locationMap.entries()).map(([locationId, data]) => ({
+            locationId,
+            locationName: data.name,
+            available: data.available,
+          }));
+
+          setInventory({
+            totalAvailable,
+            byLocation,
+            variants,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching inventory:', err);
+        setError('Failed to fetch inventory');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, [productId, useShopify]);
+
+  return { inventory, loading, error, useShopify };
+};
 
 export { mockProducts, mockCategories, deals, banners };

@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { ChevronRight, Star, ShoppingCart, Heart, Share2, Truck, ShieldCheck, RotateCcw, Minus, Plus } from 'lucide-react';
+import { ChevronRight, Star, ShoppingCart, Heart, Share2, Truck, ShieldCheck, RotateCcw, Minus, Plus, MapPin, Package, Store } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { useProduct, useProducts } from '../hooks/useShopify';
+import { useProduct, useProducts, useProductInventory, useLocations } from '../hooks/useShopify';
 import type { Product } from '../types';
 
 interface ProductPageProps {
@@ -16,9 +16,18 @@ export default function ProductPage({ addToCart }: ProductPageProps) {
   
   const { product } = useProduct(productId || '');
   const { products } = useProducts(50);
+  const { inventory, loading: inventoryLoading } = useProductInventory(productId || '');
+  const { selectedLocation } = useLocations();
+  
   const relatedProducts = products
     .filter(p => p.category === product?.category && p.id !== productId)
     .slice(0, 4);
+  
+  // Get availability for selected location
+  const selectedLocationInventory = inventory?.byLocation.find(
+    loc => loc.locationId === selectedLocation
+  );
+  const availableInSelectedStore = selectedLocationInventory?.available || 0;
 
   if (!product) {
     return (
@@ -101,7 +110,61 @@ export default function ProductPage({ addToCart }: ProductPageProps) {
           </div>
 
           <p className="text-sm text-gray-500">MRP incl. of all taxes</p>
-          <p className="text-sm text-gray-600">Quantity: {product.quantity}</p>
+          
+          {/* Real-time Inventory Display */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Store size={16} className="text-jio-green" />
+              <span className="font-medium text-sm text-gray-900">Store Availability</span>
+              {inventoryLoading && <span className="text-xs text-gray-500">(Loading...)</span>}
+            </div>
+            
+            {/* Selected Location Availability */}
+            <div className="flex items-center gap-2 mb-3">
+              <MapPin size={14} className="text-gray-500" />
+              <span className="text-sm text-gray-700">
+                Available at selected store: 
+                <span className={`font-medium ${availableInSelectedStore > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {availableInSelectedStore > 0 ? `${availableInSelectedStore} units` : 'Out of Stock'}
+                </span>
+              </span>
+            </div>
+            
+            {/* All Locations Inventory */}
+            {inventory && inventory.byLocation.length > 0 && (
+              <div className="border-t border-gray-200 pt-2">
+                <p className="text-xs text-gray-500 mb-1.5">Availability by location:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {inventory.byLocation.map((loc) => (
+                    <div 
+                      key={loc.locationId}
+                      className={`flex items-center justify-between text-xs px-2 py-1 rounded ${
+                        loc.locationId === selectedLocation ? 'bg-green-100 text-green-800' : 'bg-white'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1">
+                        <Package size={12} />
+                        {loc.locationName}
+                      </span>
+                      <span className={`font-medium ${loc.available > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        {loc.available > 0 ? `${loc.available} in stock` : 'Out of stock'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Total Inventory */}
+            {inventory && (
+              <div className="border-t border-gray-200 mt-2 pt-2 flex items-center justify-between">
+                <span className="text-xs text-gray-500">Total across all stores:</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {inventory.totalAvailable} units
+                </span>
+              </div>
+            )}
+          </div>
 
           {/* Quantity Selector */}
           <div className="flex items-center gap-4 py-2">
