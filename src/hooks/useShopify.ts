@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { shopifyClient, isShopifyConfigured, GET_PRODUCTS, GET_PRODUCT_BY_HANDLE, GET_COLLECTIONS, GET_COLLECTION_BY_HANDLE, SEARCH_PRODUCTS, CREATE_CART, ADD_TO_CART, UPDATE_CART_LINE, REMOVE_FROM_CART, GET_CART, GET_SHOP_INFO, GET_LOCATIONS, GET_PRODUCT_INVENTORY } from '../lib/shopify';
 import { products as mockProducts, categories as mockCategories, deals, banners } from '../data';
 import type { Product, Collection, CartItem, ShopifyProduct, ShopifyCollection, CartLine } from '../types/shopify';
+import { useDeliveryMode } from '../contexts/DeliveryModeContext';
 
 // Helper to convert Shopify product to our Product type
 const mapShopifyProduct = (shopifyProduct: ShopifyProduct): Product => {
@@ -871,6 +872,45 @@ export const useProductInventory = (productId: string) => {
   }, [productId, useShopify]);
 
   return { inventory, loading, error, useShopify };
+};
+
+// Hook to filter products based on delivery mode and store selection
+export const useDeliveryModeProducts = (products: Product[]) => {
+  const { isQuickMode, isScheduledMode, selectedStoreId } = useDeliveryMode();
+  const { locations } = useLocations();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    
+    if (isScheduledMode) {
+      // Scheduled mode: Show ALL products from ALL stores
+      console.log('Scheduled mode: Showing all products');
+      setFilteredProducts(products);
+    } else if (isQuickMode && selectedStoreId) {
+      // Quick mode with store selected: Filter to products available at selected store
+      // For now, show all products (inventory check happens at product detail level)
+      // In production, you'd filter based on inventory data
+      console.log('Quick mode: Store selected:', selectedStoreId);
+      setFilteredProducts(products);
+    } else {
+      // Quick mode without store selected: Show all but prompt to select store
+      console.log('Quick mode: No store selected');
+      setFilteredProducts(products);
+    }
+    
+    setLoading(false);
+  }, [products, isQuickMode, isScheduledMode, selectedStoreId]);
+
+  return { 
+    filteredProducts, 
+    loading, 
+    isScheduledMode, 
+    isQuickMode,
+    selectedStoreId,
+    hasSelectedStore: !!selectedStoreId 
+  };
 };
 
 export { mockProducts, mockCategories, deals, banners };

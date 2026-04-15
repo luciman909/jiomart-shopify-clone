@@ -1,21 +1,24 @@
 import { useState } from 'react';
-import { Zap, Calendar, MapPin, ChevronDown, X, Crosshair, Store, Check } from 'lucide-react';
+import { Zap, Calendar, MapPin, ChevronDown, X, Crosshair, Store, Check, Package } from 'lucide-react';
 import { useLocations } from '../hooks/useShopify';
+import { useDeliveryMode } from '../contexts/DeliveryModeContext';
 
 interface DeliveryModeToggleProps {
   storeName?: string;
 }
 
 export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: DeliveryModeToggleProps) {
-  const [mode, setMode] = useState<'quick' | 'scheduled'>('quick');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showStoreModal, setShowStoreModal] = useState(false);
   const [deliveryLocation, setDeliveryLocation] = useState('Crescent, Panwadl, Bhavnagar');
   
-  // Get store locations from Shopify
-  const { locations, selectedLocation, selectLocation } = useLocations();
+  // Get global delivery mode state
+  const { mode, setMode, selectedStoreId, setSelectedStoreId, isQuickMode, isScheduledMode } = useDeliveryMode();
   
-  const selectedStore = locations.find(loc => loc.id === selectedLocation);
+  // Get store locations from Shopify
+  const { locations } = useLocations();
+  
+  const selectedStore = locations.find(loc => loc.id === selectedStoreId);
   const storeDisplayName = selectedStore?.name || 'Select Store';
 
   return (
@@ -29,18 +32,18 @@ export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: Del
               <button
                 onClick={() => setMode('quick')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  mode === 'quick'
+                  isQuickMode
                     ? 'bg-white text-[#0078AD]'
                     : 'text-white hover:bg-white/10'
                 }`}
               >
-                <Zap size={14} className={mode === 'quick' ? 'fill-current' : ''} />
+                <Zap size={14} className={isQuickMode ? 'fill-current' : ''} />
                 Quick
               </button>
               <button
                 onClick={() => setMode('scheduled')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  mode === 'scheduled'
+                  isScheduledMode
                     ? 'bg-white text-[#0078AD]'
                     : 'text-white hover:bg-white/10'
                 }`}
@@ -97,18 +100,30 @@ export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: Del
               <ChevronDown size={14} />
             </button>
 
-            {/* Store Selector - NEW */}
+            {/* Store Selector - Quick Mode: Select Store, Scheduled Mode: All Stores */}
             {locations.length > 0 && (
               <div className="flex items-center gap-2 ml-auto">
-                <span className="text-white/70 text-sm hidden sm:block">Pick up from:</span>
-                <button
-                  onClick={() => setShowStoreModal(true)}
-                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                >
-                  <Store size={14} />
-                  <span className="max-w-[120px] truncate">{storeDisplayName}</span>
-                  <ChevronDown size={12} />
-                </button>
+                {isQuickMode ? (
+                  // Quick Mode: Select specific store
+                  <>
+                    <span className="text-white/70 text-sm hidden sm:block">Pick up from:</span>
+                    <button
+                      onClick={() => setShowStoreModal(true)}
+                      className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <Store size={14} />
+                      <span className="max-w-[120px] truncate">{storeDisplayName}</span>
+                      <ChevronDown size={12} />
+                    </button>
+                  </>
+                ) : (
+                  // Scheduled Mode: All stores combined
+                  <div className="flex items-center gap-1.5 bg-green-500/30 px-3 py-1.5 rounded-lg text-sm font-medium">
+                    <Package size={14} />
+                    <span className="hidden sm:block">All Stores Inventory</span>
+                    <span className="sm:hidden">All Stores</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -211,25 +226,25 @@ export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: Del
                 <button
                   key={location.id}
                   onClick={() => {
-                    selectLocation(location.id);
+                    setSelectedStoreId(location.id);
                     setShowStoreModal(false);
-                    window.location.reload(); // Refresh to update inventory
+                    // No reload needed - context update triggers re-render
                   }}
                   className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left ${
-                    selectedLocation === location.id
+                    selectedStoreId === location.id
                       ? 'border-[#0078AD] bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      selectedLocation === location.id ? 'bg-[#0078AD] text-white' : 'bg-gray-100 text-gray-600'
+                      selectedStoreId === location.id ? 'bg-[#0078AD] text-white' : 'bg-gray-100 text-gray-600'
                     }`}>
                       <Store size={24} />
                     </div>
                     <div>
                       <p className={`font-semibold ${
-                        selectedLocation === location.id ? 'text-[#0078AD]' : 'text-gray-900'
+                        selectedStoreId === location.id ? 'text-[#0078AD]' : 'text-gray-900'
                       }`}>
                         {location.name}
                       </p>
@@ -241,7 +256,7 @@ export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: Del
                     </div>
                   </div>
                   
-                  {selectedLocation === location.id && (
+                  {selectedStoreId === location.id && (
                     <div className="w-6 h-6 bg-[#0078AD] rounded-full flex items-center justify-center">
                       <Check size={16} className="text-white" />
                     </div>
