@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Apple, Milk, Sparkles, Palette, AlertCircle } from 'lucide-react';
+import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Apple, Milk, Sparkles, Palette, AlertCircle, ChevronLeft } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import { categories as mockCategories, deals } from '../data';
 import { useProducts, useCollections } from '../hooks/useShopify';
@@ -7,6 +7,8 @@ import { useBanners } from '../hooks/useBanners';
 import { isShopifyConfigured } from '../lib/shopify';
 import type { Product } from '../types';
 import ShopifyDebug from '../components/ShopifyDebug';
+import CategoryIconBar from '../components/CategoryIconBar';
+import SubcategorySection from '../components/SubcategorySection';
 
 interface HomeProps {
   addToCart: (product: Product) => void;
@@ -105,34 +107,63 @@ export default function Home({ addToCart }: HomeProps) {
       {/* Hero Banner Carousel */}
       <HeroBanners />
 
-      {/* Category Grid */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Shop by Category</h2>
-          <Link to="/categories" className="text-jio-green text-sm font-medium flex items-center gap-1 hover:underline">
-            View All <ChevronRight size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4">
-          {displayCategories.map((category) => {
-            const Icon = iconMap[category.icon] || ShoppingBasket;
-            return (
-              <Link
-                key={category.id}
-                to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
-                className="flex flex-col items-center gap-2 group"
-              >
-                <div className="w-full aspect-square max-w-[80px] bg-jio-light rounded-xl flex items-center justify-center group-hover:bg-jio-green/10 transition-colors">
-                  <Icon className="text-jio-green" size={28} />
-                </div>
-                <span className="text-xs sm:text-sm text-gray-700 text-center line-clamp-2 font-medium">
-                  {category.name}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {/* Category Icon Bar - Horizontal Scroll with Images */}
+      <CategoryIconBar />
+
+      {/* Fruits & Vegetables Section */}
+      <SubcategorySection 
+        title="Fruits & Vegetables"
+        subcategories={[
+          { id: '1', name: 'Fresh Fruits', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081840.png', link: '/category/fresh-fruits' },
+          { id: '2', name: 'Basic Vegetables', image: 'https://cdn-icons-png.flaticon.com/128/2909/2909787.png', link: '/category/vegetables' },
+          { id: '3', name: 'Roots, Herbs &...', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081857.png', link: '/category/herbs' },
+          { id: '4', name: 'Premium Fruits &...', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081845.png', link: '/category/premium-fruits' },
+        ]}
+      />
+
+      {/* Dairy & Bakery Section */}
+      <SubcategorySection 
+        title="Dairy & Bakery"
+        subcategories={[
+          { id: '5', name: 'Milk & Milk Products', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081968.png', link: '/category/milk' },
+          { id: '6', name: 'Cheese, Paneer &...', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081861.png', link: '/category/cheese' },
+          { id: '7', name: 'Toast & Khari', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081878.png', link: '/category/toast' },
+          { id: '8', name: 'Cakes & Muffins', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081874.png', link: '/category/cakes' },
+          { id: '9', name: 'Breads & Chapatis', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081876.png', link: '/category/breads' },
+          { id: '10', name: 'Bakery & Snacks', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081882.png', link: '/category/bakery' },
+          { id: '11', name: 'Ice Cream', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081884.png', link: '/category/ice-cream' },
+        ]}
+      />
+
+      {/* Biscuits, Drinks & Packaged Foods */}
+      <SubcategorySection 
+        title="Biscuits, Drinks & Packaged Foods"
+        subcategories={[
+          { id: '12', name: 'Chips & Namkeens', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081886.png', link: '/category/chips' },
+          { id: '13', name: 'Ice Cream & Frozen', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081888.png', link: '/category/frozen' },
+          { id: '14', name: 'Biscuits & Cookies', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081890.png', link: '/category/biscuits' },
+          { id: '15', name: 'Chocolates & Candies', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081892.png', link: '/category/chocolates' },
+          { id: '16', name: 'Indian Sweets', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081894.png', link: '/category/sweets' },
+          { id: '17', name: 'Drinks & Juices', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081896.png', link: '/category/drinks' },
+          { id: '18', name: 'Breakfast Cereals', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081898.png', link: '/category/cereals' },
+          { id: '19', name: 'Noodles, Pasta &...', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081900.png', link: '/category/noodles' },
+        ]}
+      />
+
+      {/* Cooking Essentials */}
+      <SubcategorySection 
+        title="Cooking Essentials"
+        subcategories={[
+          { id: '20', name: 'Atta, Flours & Sooji', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081902.png', link: '/category/flours' },
+          { id: '21', name: 'Dals & Pulses', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081904.png', link: '/category/dals' },
+          { id: '22', name: 'Rice', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081906.png', link: '/category/rice' },
+          { id: '23', name: 'Sabudana, Poha &...', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081908.png', link: '/category/poha' },
+          { id: '24', name: 'Edible Oils', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081910.png', link: '/category/oils' },
+          { id: '25', name: 'Masala, Spices &...', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081912.png', link: '/category/spices' },
+          { id: '26', name: 'Salt, Sugar & Jaggery', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081914.png', link: '/category/sugar' },
+          { id: '27', name: 'Wheat & Soya', image: 'https://cdn-icons-png.flaticon.com/128/3081/3081916.png', link: '/category/wheat' },
+        ]}
+      />
 
       {/* Deals Section */}
       <section>
