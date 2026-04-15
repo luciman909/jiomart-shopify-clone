@@ -166,6 +166,23 @@ export default function Home({ addToCart }: HomeProps) {
         ]}
       />
 
+      {/* My List & Offers - JioMart Style */}
+      <section className="bg-white py-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-red-600">My List & Offers</h2>
+            <Link to="/offers" className="text-[#0078AD] text-sm font-medium flex items-center gap-1 hover:underline">
+              View All <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            {products.slice(0, 6).map((product: Product) => (
+              <ProductCard key={product.id} product={product} addToCart={addToCart} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Flavour Savers / Top Products Section - JioMart Style */}
       <ProductSection
         title="Flavour Savers"
