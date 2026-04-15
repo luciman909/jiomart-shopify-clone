@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Zap, Calendar, MapPin, ChevronDown, X, Crosshair } from 'lucide-react';
+import { Zap, Calendar, MapPin, ChevronDown, X, Crosshair, Store, Check } from 'lucide-react';
+import { useLocations } from '../hooks/useShopify';
 
 interface DeliveryModeToggleProps {
   storeName?: string;
@@ -8,7 +9,14 @@ interface DeliveryModeToggleProps {
 export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: DeliveryModeToggleProps) {
   const [mode, setMode] = useState<'quick' | 'scheduled'>('quick');
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showStoreModal, setShowStoreModal] = useState(false);
   const [deliveryLocation, setDeliveryLocation] = useState('Crescent, Panwadl, Bhavnagar');
+  
+  // Get store locations from Shopify
+  const { locations, selectedLocation, selectLocation } = useLocations();
+  
+  const selectedStore = locations.find(loc => loc.id === selectedLocation);
+  const storeDisplayName = selectedStore?.name || 'Select Store';
 
   return (
     <>
@@ -71,21 +79,39 @@ export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: Del
       {/* Delivery Location Bar */}
       <div className="bg-[#0078AD] text-white border-t border-white/20">
         <div className="max-w-7xl mx-auto px-4">
-          <button
-            onClick={() => setShowLocationModal(true)}
-            className="flex items-center gap-2 py-2 text-sm hover:bg-white/10 px-2 -mx-2 rounded-lg transition-colors"
-          >
-            <span className="bg-white text-[#0078AD] px-2 py-0.5 rounded text-xs font-bold">
-              {mode === 'quick' ? 'Quick Delivery' : 'Scheduled'}
-            </span>
-            <Zap size={14} className="hidden sm:block" />
-            <span className="font-semibold hidden sm:block">
-              {mode === 'quick' ? 'Quick' : 'Scheduled'} delivery to:
-            </span>
-            <MapPin size={14} />
-            <span className="underline decoration-dotted">{deliveryLocation}</span>
-            <ChevronDown size={14} />
-          </button>
+          <div className="flex items-center gap-4 py-2">
+            {/* Delivery Mode Badge */}
+            <button
+              onClick={() => setShowLocationModal(true)}
+              className="flex items-center gap-2 text-sm hover:bg-white/10 px-2 py-1 rounded-lg transition-colors"
+            >
+              <span className="bg-white text-[#0078AD] px-2 py-0.5 rounded text-xs font-bold">
+                {mode === 'quick' ? 'Quick Delivery' : 'Scheduled'}
+              </span>
+              <Zap size={14} className="hidden sm:block" />
+              <span className="font-semibold hidden sm:block">
+                {mode === 'quick' ? 'Quick' : 'Scheduled'} delivery to:
+              </span>
+              <MapPin size={14} />
+              <span className="underline decoration-dotted">{deliveryLocation}</span>
+              <ChevronDown size={14} />
+            </button>
+
+            {/* Store Selector - NEW */}
+            {locations.length > 0 && (
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="text-white/70 text-sm hidden sm:block">Pick up from:</span>
+                <button
+                  onClick={() => setShowStoreModal(true)}
+                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                >
+                  <Store size={14} />
+                  <span className="max-w-[120px] truncate">{storeDisplayName}</span>
+                  <ChevronDown size={12} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -148,6 +174,86 @@ export default function DeliveryModeToggle({ storeName = 'Bhavnagar Mall' }: Del
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Store Selection Modal */}
+      {showStoreModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowStoreModal(false)}
+          />
+          
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowStoreModal(false)}
+              className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={20} className="text-gray-500" />
+            </button>
+
+            {/* Header */}
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Select Store Location
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Choose your preferred store for pickup or delivery. Product availability may vary by location.
+            </p>
+
+            {/* Store Options */}
+            <div className="space-y-3">
+              {locations.map((location) => (
+                <button
+                  key={location.id}
+                  onClick={() => {
+                    selectLocation(location.id);
+                    setShowStoreModal(false);
+                    window.location.reload(); // Refresh to update inventory
+                  }}
+                  className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left ${
+                    selectedLocation === location.id
+                      ? 'border-[#0078AD] bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      selectedLocation === location.id ? 'bg-[#0078AD] text-white' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      <Store size={24} />
+                    </div>
+                    <div>
+                      <p className={`font-semibold ${
+                        selectedLocation === location.id ? 'text-[#0078AD]' : 'text-gray-900'
+                      }`}>
+                        {location.name}
+                      </p>
+                      {(location.city || location.country) && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {[location.city, location.country].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {selectedLocation === location.id && (
+                    <div className="w-6 h-6 bg-[#0078AD] rounded-full flex items-center justify-center">
+                      <Check size={16} className="text-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Info Text */}
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              Selecting a store will show you products available at that location
+            </p>
           </div>
         </div>
       )}
