@@ -262,7 +262,33 @@ If you hit rate limits:
 
 ## Next Steps
 
-### Enhanced Features to Add
+## Banner Configuration
+
+### Option 1: Custom Banners via Environment Variables
+
+Add your own banner images via `VITE_CUSTOM_BANNERS`:
+
+```bash
+VITE_CUSTOM_BANNERS=[{"id":"1","title":"Summer Sale","subtitle":"Up to 50% OFF","image":"https://your-cdn.com/banner1.jpg","link":"/category/sale","position":"hero"},{"id":"2","title":"Electronics","subtitle":"Latest Gadgets","image":"https://your-cdn.com/banner2.jpg","link":"/category/electronics","position":"grid"}]
+```
+
+**Banner positions:**
+- `hero` - Main carousel (full width)
+- `grid` - Grid layout (side by side)
+- `sidebar` - Sidebar placement
+
+### Option 2: Default Banners
+
+If no custom banners configured, the app uses default banners with your store branding.
+
+### Image Requirements
+
+- **Hero banners**: 1200x400px (3:1 aspect ratio)
+- **Grid banners**: 600x300px (2:1 aspect ratio)
+- Supported formats: JPG, PNG, WebP
+- Use CDN or Shopify Files for hosting
+
+## Enhanced Features to Add
 
 1. **Customer Authentication**: Login via Shopify Customer API
 2. **Metafields**: Show additional product info
