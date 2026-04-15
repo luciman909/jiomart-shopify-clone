@@ -6,19 +6,20 @@ import {
   ShoppingCart, 
   User, 
   Heart, 
-  List, 
   ChevronDown,
   Menu,
   X,
+  Phone,
+  Store,
+  List,
   Gift,
   Ticket,
-  HelpCircle,
-  Phone,
-  Store
+  HelpCircle
 } from 'lucide-react';
 import { categories } from '../data';
 import { useShopInfo, useCollections } from '../hooks/useShopify';
 import StoreSwitcher from './StoreSwitcher';
+import DeliveryModeToggle from './DeliveryModeToggle';
 
 interface HeaderProps {
   cartCount: number;
@@ -45,11 +46,11 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
-      {/* Top Bar */}
+      {/* Top Bar - Green */}
       <div className="bg-jio-green text-white py-2 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
           <div className="flex items-center gap-4">
-            <span className="font-semibold">Welcome to {shopInfo?.name || 'JioMart'}</span>
+            <span className="font-semibold">Welcome to {shopInfo?.name || 'Bhavnagar Mall'}</span>
             <span className="hidden sm:inline">|</span>
             <span className="hidden sm:flex items-center gap-1">
               <Phone size={12} /> 1800 890 1222
@@ -66,6 +67,9 @@ export default function Header({ cartCount, searchQuery, setSearchQuery }: Heade
           </div>
         </div>
       </div>
+
+      {/* Delivery Mode Toggle - Blue Bar */}
+      <DeliveryModeToggle storeName={shopInfo?.name} />
 
       {/* Main Header */}
       <div className="border-b">

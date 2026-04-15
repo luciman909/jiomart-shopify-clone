@@ -10,9 +10,9 @@ export const shopifyClient = createStorefrontApiClient({
   publicAccessToken: apiToken,
 });
 
-export const isShopifyConfigured = () => {
-  return storeDomain && storeDomain !== 'your-store.myshopify.com' && 
-         apiToken && apiToken !== 'your_storefront_api_token';
+export const isShopifyConfigured = (): boolean => {
+  return Boolean(storeDomain && storeDomain !== 'your-store.myshopify.com' && 
+         apiToken && apiToken !== 'your_storefront_api_token');
 };
 
 // GraphQL Queries
