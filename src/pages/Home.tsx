@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Apple, Milk, Sparkles, Palette } from 'lucide-react';
+import { ChevronRight, ShoppingBasket, Smartphone, Shirt, Home as HomeIcon, Apple, Milk, Sparkles, Palette, AlertCircle } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { banners, categories as mockCategories, deals } from '../data';
+import { categories as mockCategories, deals } from '../data';
 import { useProducts, useCollections } from '../hooks/useShopify';
+import { useBanners } from '../hooks/useBanners';
+import { isShopifyConfigured } from '../lib/shopify';
 import type { Product } from '../types';
 import ShopifyDebug from '../components/ShopifyDebug';
 
@@ -20,6 +22,61 @@ const iconMap: Record<string, React.ElementType> = {
   Sparkles,
   Palette
 };
+
+// Hero Banners Sub-component
+function HeroBanners() {
+  const { banners, loading } = useBanners('hero');
+  const shopifyReady = isShopifyConfigured();
+  
+  if (loading) {
+    return (
+      <div className="relative overflow-hidden rounded-xl bg-gray-100 animate-pulse h-48 sm:h-64">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-gray-400">Loading banners...</span>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="relative overflow-hidden rounded-xl">
+      {!shopifyReady && (
+        <div className="absolute top-2 right-2 z-10 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+          <AlertCircle size={10} />
+          DEMO BANNERS
+        </div>
+      )}
+      <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 gap-4">
+        {banners.map((banner) => (
+          <div 
+            key={banner.id} 
+            className="flex-none w-full sm:w-[calc(100%-1rem)] snap-center"
+          >
+            <Link to={banner.link} className="block relative aspect-[3/1] sm:aspect-[4/1] rounded-xl overflow-hidden">
+              <img
+                src={banner.image}
+                alt={banner.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback if image fails to load
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/1200x400?text=Banner';
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+              <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8">
+                <h2 className="text-white text-xl sm:text-3xl font-bold">{banner.title}</h2>
+                {banner.subtitle && (
+                  <p className="text-white/80 text-sm sm:text-base mt-1">{banner.subtitle}</p>
+                )}
+                <p className="text-white/80 text-sm sm:text-base mt-1">Shop Now</p>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Home({ addToCart }: HomeProps) {
   // Get real products from Shopify
@@ -46,29 +103,7 @@ export default function Home({ addToCart }: HomeProps) {
         </div>
       )}
       {/* Hero Banner Carousel */}
-      <div className="relative overflow-hidden rounded-xl">
-        <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 gap-4">
-          {banners.map((banner) => (
-            <div 
-              key={banner.id} 
-              className="flex-none w-full sm:w-[calc(100%-1rem)] snap-center"
-            >
-              <Link to={banner.link} className="block relative aspect-[3/1] sm:aspect-[4/1] rounded-xl overflow-hidden">
-                <img
-                  src={banner.image}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-                <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8">
-                  <h2 className="text-white text-xl sm:text-3xl font-bold">{banner.title}</h2>
-                  <p className="text-white/80 text-sm sm:text-base mt-1">Shop Now</p>
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
+      <HeroBanners />
 
       {/* Category Grid */}
       <section>

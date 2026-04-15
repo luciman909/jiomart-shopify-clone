@@ -2,7 +2,8 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import CategorySidebar from '../components/CategorySidebar';
-import { useProducts } from '../hooks/useShopify';
+import { useCollection, useProducts } from '../hooks/useShopify';
+import { isShopifyConfigured } from '../lib/shopify';
 import type { Product } from '../types';
 
 interface CategoryPageProps {
@@ -10,20 +11,35 @@ interface CategoryPageProps {
 }
 
 export default function CategoryPage({ addToCart }: CategoryPageProps) {
-  const { products } = useProducts(100);
   const { categoryName } = useParams<{ categoryName: string }>();
+  const shopifyReady = isShopifyConfigured();
+  
+  // Use Shopify collection hook if configured
+  const { collection, products: collectionProducts, loading: collectionLoading } = useCollection(categoryName || '', 50);
+  
+  // Fallback to filtering all products
+  const { products: allProducts } = useProducts(100);
   
   const categoryNameFormatted = categoryName 
     ? categoryName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
     : '';
 
-  const filteredProducts = products.filter(product => 
-    product.category.toLowerCase() === categoryNameFormatted.toLowerCase() ||
-    categoryNameFormatted.toLowerCase().includes(product.category.toLowerCase())
-  );
-
-  // Fallback to all products if no match
-  const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
+  // Determine which products to show
+  let displayProducts: Product[] = [];
+  let isLoading = false;
+  
+  if (shopifyReady && categoryName) {
+    // Use Shopify collection products
+    displayProducts = collectionProducts;
+    isLoading = collectionLoading;
+  } else {
+    // Fallback: filter by category name
+    const filteredProducts = allProducts.filter(product => 
+      product.category.toLowerCase() === categoryNameFormatted.toLowerCase() ||
+      categoryNameFormatted.toLowerCase().includes(product.category.toLowerCase())
+    );
+    displayProducts = filteredProducts.length > 0 ? filteredProducts : allProducts;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4">
@@ -45,8 +61,12 @@ export default function CategoryPage({ addToCart }: CategoryPageProps) {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{categoryNameFormatted}</h1>
-              <p className="text-sm text-gray-500">{displayProducts.length} products</p>
+              <h1 className="text-xl font-bold text-gray-900">
+                {collection?.title || categoryNameFormatted}
+              </h1>
+              <p className="text-sm text-gray-500">
+                {isLoading ? 'Loading...' : `${displayProducts.length} products`}
+              </p>
             </div>
             <button className="lg:hidden flex items-center gap-2 px-4 py-2 border rounded-lg text-sm">
               <SlidersHorizontal size={16} />
@@ -85,7 +105,12 @@ export default function CategoryPage({ addToCart }: CategoryPageProps) {
           </div>
 
           {/* Products Grid */}
-          {displayProducts.length > 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-jio-green"></div>
+              <span className="ml-3 text-gray-600">Loading products...</span>
+            </div>
+          ) : displayProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {displayProducts.map((product) => (
                 <ProductCard key={product.id} product={product} addToCart={addToCart} />
