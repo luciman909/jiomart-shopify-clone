@@ -7,59 +7,73 @@ import { useCollections } from '../hooks/useShopify';
 const categoryIcons = [
   {
     id: '1',
-    name: 'Groceries',
+    name: 'Smart Buys',
     image: 'https://cdn-icons-png.flaticon.com/128/2921/2921822.png',
-    color: 'bg-green-100',
-    link: '/category/groceries'
-  },
-  {
-    id: '2',
-    name: 'Happy Hour Coupons',
-    image: 'https://cdn-icons-png.flaticon.com/128/612/612500.png',
     color: 'bg-red-100',
     link: '/offers'
   },
   {
+    id: '2',
+    name: 'Everything Store',
+    image: 'https://cdn-icons-png.flaticon.com/128/3225/3225196.png',
+    color: 'bg-purple-100',
+    link: '/category/all'
+  },
+  {
     id: '3',
-    name: 'Low Price Guarantee',
+    name: 'Everyday Essentials',
     image: 'https://cdn-icons-png.flaticon.com/128/3081/3081840.png',
     color: 'bg-yellow-100',
-    link: '/offers'
+    link: '/category/essentials'
   },
   {
     id: '4',
-    name: 'Quick Electronics',
+    name: 'Coupon Mania',
+    image: 'https://cdn-icons-png.flaticon.com/128/612/612500.png',
+    color: 'bg-pink-100',
+    link: '/offers'
+  },
+  {
+    id: '5',
+    name: 'Fashion',
+    image: 'https://cdn-icons-png.flaticon.com/128/3081/3081974.png',
+    color: 'bg-blue-100',
+    link: '/category/fashion'
+  },
+  {
+    id: '6',
+    name: 'Home & Lifestyle',
+    image: 'https://cdn-icons-png.flaticon.com/128/3081/3081848.png',
+    color: 'bg-green-100',
+    link: '/category/home-kitchen'
+  },
+  {
+    id: '7',
+    name: 'Smartphone Deals',
     image: 'https://cdn-icons-png.flaticon.com/128/3659/3659898.png',
     color: 'bg-blue-100',
     link: '/category/electronics'
   },
   {
-    id: '5',
-    name: 'Summer Savings',
-    image: 'https://cdn-icons-png.flaticon.com/128/869/869869.png',
-    color: 'bg-orange-100',
-    link: '/offers'
+    id: '8',
+    name: 'Electronics Zone',
+    image: 'https://cdn-icons-png.flaticon.com/128/3659/3659899.png',
+    color: 'bg-indigo-100',
+    link: '/category/electronics'
   },
   {
-    id: '6',
+    id: '9',
     name: 'Beauty & Beyond',
     image: 'https://cdn-icons-png.flaticon.com/128/3081/3081986.png',
     color: 'bg-pink-100',
     link: '/category/beauty'
   },
   {
-    id: '7',
-    name: 'Home & Kitchen',
-    image: 'https://cdn-icons-png.flaticon.com/128/3081/3081848.png',
-    color: 'bg-purple-100',
-    link: '/category/home-kitchen'
-  },
-  {
-    id: '8',
-    name: 'Fashion',
-    image: 'https://cdn-icons-png.flaticon.com/128/3081/3081974.png',
-    color: 'bg-indigo-100',
-    link: '/category/fashion'
+    id: '10',
+    name: 'Groceries',
+    image: 'https://cdn-icons-png.flaticon.com/128/3081/3081857.png',
+    color: 'bg-green-100',
+    link: '/category/groceries'
   }
 ];
 

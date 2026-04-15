@@ -9,6 +9,7 @@ import type { Product } from '../types';
 import ShopifyDebug from '../components/ShopifyDebug';
 import CategoryIconBar from '../components/CategoryIconBar';
 import SubcategorySection from '../components/SubcategorySection';
+import ProductSection from '../components/ProductSection';
 
 interface HomeProps {
   addToCart: (product: Product) => void;
@@ -165,6 +166,41 @@ export default function Home({ addToCart }: HomeProps) {
         ]}
       />
 
+      {/* Flavour Savers / Top Products Section - JioMart Style */}
+      <ProductSection
+        title="Flavour Savers"
+        products={products.slice(0, 6)}
+        onAddToCart={addToCart}
+        viewAllLink="/search"
+      />
+
+      {/* Promo Banner - Electronics Zone */}
+      <section className="max-w-7xl mx-auto px-4 py-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-gray-900">
+              Electronics Zone | <span className="text-green-600">Up To 10% Off</span> | <span className="text-blue-600">Code Tech100</span>
+            </h2>
+            <Link to="/category/electronics" className="text-[#0078AD] text-sm font-medium flex items-center hover:underline">
+              View All <ChevronRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            {products.slice(6, 12).map((product: Product) => (
+              <ProductCard key={product.id} product={product} addToCart={addToCart} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Fashion Bestsellers */}
+      <ProductSection
+        title="Fashion Bestsellers"
+        products={products.slice(12, 18)}
+        onAddToCart={addToCart}
+        viewAllLink="/category/fashion"
+      />
+
       {/* Deals Section */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -192,21 +228,6 @@ export default function Home({ addToCart }: HomeProps) {
               </Link>
             );
           })}
-        </div>
-      </section>
-
-      {/* Top Products */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Top Products</h2>
-          <Link to="/search" className="text-jio-green text-sm font-medium flex items-center gap-1 hover:underline">
-            View All <ChevronRight size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-          {products.slice(0, 12).map((product: Product) => (
-            <ProductCard key={product.id} product={product} addToCart={addToCart} />
-          ))}
         </div>
       </section>
 
